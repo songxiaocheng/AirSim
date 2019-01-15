@@ -99,6 +99,7 @@ public: //implementation of VehicleSimApiBase
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const override;
     virtual std::string getRecordFileLine(bool is_header_line) const override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
+    virtual void applyDisturbance(bool left) override;
 
 protected: //additional interface for derived class
     virtual void pawnTick(float dt);
@@ -199,4 +200,6 @@ private: //vars
     bool beam_enabled_ = false;
     Boundary boundary_;
     bool is_passive_ = false;
+    bool disturbance_ = false;
+
 };

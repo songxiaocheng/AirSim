@@ -31,6 +31,8 @@ public:
     void inputEventToggleHelp();
     void inputEventToggleTrace();
     void inputEventToggleBoundary();
+    void inputEventLeftDisturbance();
+    void inputEventRightDisturbance();
     void inputEventToggleSubwindow0();
     void inputEventToggleSubwindow1();
     void inputEventToggleSubwindow2();
