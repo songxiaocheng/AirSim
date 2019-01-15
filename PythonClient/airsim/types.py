@@ -356,3 +356,7 @@ class LidarData(MsgpackMixin):
     point_cloud = 0.0
     time_stamp = np.uint64(0)
     pose = Pose()
+
+class Boundary(MsgpackMixin):
+    pos = Vector3r()
+    boundary = 0.0

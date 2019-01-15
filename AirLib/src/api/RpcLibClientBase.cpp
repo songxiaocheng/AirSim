@@ -189,6 +189,21 @@ void RpcLibClientBase::simSetVehiclePose(const Pose& pose, bool ignore_collision
     pimpl_->client.call("simSetVehiclePose", RpcLibAdapatorsBase::Pose(pose), ignore_collision, vehicle_name);
 }
 
+Boundary RpcLibClientBase::simGetBoundary(const std::string& vehicle_name) const
+{
+    return pimpl_->client.call("simGetBoundary", vehicle_name).as<RpcLibAdapatorsBase::Boundary>().to();
+}
+
+void RpcLibClientBase::simSetBoundary(const Boundary& boundary, const std::string& vehicle_name)
+{
+    pimpl_->client.call("simSetBoundary", RpcLibAdapatorsBase::Boundary(boundary), vehicle_name);
+}
+
+void RpcLibClientBase::simEnableCustomBoundaryData(bool is_enable, const std::string& vehicle_name)
+{
+    pimpl_->client.call("simEnableCustomBoundaryData", is_enable, vehicle_name);
+}
+
 vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name)
 {
     const auto& response_adaptor = pimpl_->client.call("simGetImages", 

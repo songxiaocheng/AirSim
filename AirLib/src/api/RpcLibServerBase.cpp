@@ -124,6 +124,19 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::Pose(pose);
     });
 
+    pimpl_->server.bind("simSetBoundary", [&](const RpcLibAdapatorsBase::Boundary &boundary, const std::string& vehicle_name) -> void {
+        getVehicleSimApi(vehicle_name)->setBoundary(boundary.to());
+    });
+
+    pimpl_->server.bind("simGetBoundary", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::Boundary {
+        const auto& boundary = getVehicleSimApi(vehicle_name)->getBoundary();
+        return RpcLibAdapatorsBase::Boundary(boundary);
+    });
+
+    pimpl_->server.bind("simEnableCustomBoundaryData", [&](bool is_enable, const std::string& vehicle_name) -> void {
+        getVehicleSimApi(vehicle_name)->enableCustomBoundaryData(is_enable);
+    });
+
     pimpl_->server.
         bind("simSetSegmentationObjectID", [&](const std::string& mesh_name, int object_id, bool is_name_regex) -> bool {
         return getWorldSimApi()->setSegmentationObjectID(mesh_name, object_id, is_name_regex);
