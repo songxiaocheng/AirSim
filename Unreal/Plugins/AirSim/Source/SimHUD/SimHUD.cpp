@@ -100,6 +100,11 @@ void ASimHUD::inputEventRightDisturbance()
     simmode_->getVehicleSimApi()->applyDisturbance(false);
 }
 
+void ASimHUD::inputEventToggleBoundary()
+{
+    simmode_->getVehicleSimApi()->toggleBoundary();
+}
+
 ASimHUD::ImageType ASimHUD::getSubwindowCameraType(int window_index)
 {
     //TODO: index check
@@ -248,6 +253,7 @@ void ASimHUD::setupInputBindings()
     UAirBlueprintLib::BindActionToKey("InputEventToggleTrace", EKeys::T, this, &ASimHUD::inputEventToggleTrace);
     UAirBlueprintLib::BindActionToKey("inputEventLeftDisturbance", EKeys::Left, this, &ASimHUD::inputEventLeftDisturbance);
     UAirBlueprintLib::BindActionToKey("inputEventRightDisturbance", EKeys::Right, this, &ASimHUD::inputEventRightDisturbance);
+    UAirBlueprintLib::BindActionToKey("InputEventToggleBoundary", EKeys::L, this, &ASimHUD::inputEventToggleBoundary);
 
     UAirBlueprintLib::BindActionToKey("InputEventToggleSubwindow0", EKeys::One, this, &ASimHUD::inputEventToggleSubwindow0);
     UAirBlueprintLib::BindActionToKey("InputEventToggleSubwindow1", EKeys::Two, this, &ASimHUD::inputEventToggleSubwindow1);

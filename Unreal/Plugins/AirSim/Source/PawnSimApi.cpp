@@ -52,6 +52,7 @@ void PawnSimApi::initialize()
     //add listener for pawn's collision event
     params_.pawn_events->getCollisionSignal().connect_member(this, &PawnSimApi::onCollision);
     params_.pawn_events->getPawnTickSignal().connect_member(this, &PawnSimApi::pawnTick);
+    boundary_ = Boundary(kinematics_->getPose().position, {});
 }
 
 void PawnSimApi::setStartPosition(const FVector& position, const FRotator& rotator)
@@ -374,6 +375,11 @@ void PawnSimApi::applyDisturbance(bool left) {
     setPose(pose, false);
 }
 
+void PawnSimApi::toggleBoundary()
+{
+    boundary_enabled_ = !boundary_enabled_;
+}
+
 void PawnSimApi::allowPassthroughToggleInput()
 {
     state_.passthrough_enabled = !state_.passthrough_enabled;
@@ -441,6 +447,67 @@ void PawnSimApi::setPose(const Pose& pose, bool ignore_collision)
     UAirBlueprintLib::RunCommandOnGameThread([this, pose, ignore_collision]() {
         setPoseInternal(pose, ignore_collision);
     }, true);
+}
+
+PawnSimApi::Boundary PawnSimApi::getBoundary() const
+{
+    return boundary_;
+}
+
+void PawnSimApi::setBoundary(const Boundary& boundary)
+{
+    UAirBlueprintLib::RunCommandOnGameThread([this, boundary]() {
+        boundary_ = boundary;
+    }, true);
+}
+
+void PawnSimApi::enableCustomBoundaryData(bool is_enable)
+{
+    if(is_enable ^ boundary_custom_){
+        boundary_ = Boundary(kinematics_->getPose().position,{});
+    }
+    boundary_custom_ = is_enable;
+}
+
+void PawnSimApi::showBoundary(float dt)
+{
+    if (boundary_enabled_) {
+        Boundary boundary;
+        const auto* world = params_.pawn->GetWorld();
+        if (world != nullptr) {
+            if(!boundary_custom_){
+                msr::airlib::vector<msr::airlib::Vector3r> ps;
+                FHitResult OutHit;
+                const FVector Start = params_.pawn->GetActorLocation() - 50 * FVector::UpVector;
+                const int N = 60;
+                const FCollisionQueryParams CollisionParams;
+                //UKismetSystemLibrary::FlushPersistentDebugLines(params_.pawn->GetWorld());
+                for (int i = 0; i < N; i++) {
+                    const double theta = 2.0 * i * M_PI / N;
+                    const FVector ForwardVector(cos(theta), sin(theta), 0);
+                    const FVector End = ((ForwardVector * 2000.f) + Start);
+
+                    const auto* world = params_.pawn->GetWorld();
+                    if (world != nullptr)
+                    {
+                        FVector point = End;
+                        if (world->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams)) {
+                            point = OutHit.ImpactPoint;
+                        }
+                        ps.emplace_back(ned_transform_.toLocalNed(point));
+                    }
+                }
+                const msr::airlib::Vector3r pos = ned_transform_.toLocalNed(Start);
+                boundary = msr::airlib::Boundary(pos, ps);
+                PawnSimApi::setBoundary(boundary);
+            }
+            for (const auto& point : boundary_.boundary) {
+                const FVector Start = ned_transform_.fromLocalNed(boundary_.pos);
+                const FVector End = ned_transform_.fromLocalNed(point);
+                DrawDebugLine(world, Start, End, FColor::Green, false, 2 * dt, 0, 5);
+            }
+        }
+    }
 }
 
 void PawnSimApi::setPoseInternal(const Pose& pose, bool ignore_collision)

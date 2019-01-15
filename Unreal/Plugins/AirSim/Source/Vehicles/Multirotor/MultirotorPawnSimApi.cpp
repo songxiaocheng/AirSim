@@ -3,6 +3,7 @@
 #include "vehicles/multirotor/MultiRotorParamsFactory.hpp"
 #include "UnrealSensors/UnrealSensorFactory.h"
 #include <exception>
+#include "DrawDebugHelpers.h"
 
 using namespace msr::airlib;
 
@@ -110,6 +111,8 @@ void MultirotorPawnSimApi::updateRendering(float dt)
         else
             PawnSimApi::setPose(last_phys_pose_, false);
     }
+
+    showBoundary(dt);
 
     //UAirBlueprintLib::LogMessage(TEXT("Collision (raw) Count:"), FString::FromInt(collision_response.collision_count_raw), LogDebugLevel::Unimportant);
     UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), 
