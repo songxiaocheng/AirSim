@@ -433,6 +433,16 @@ void PawnSimApi::setTraceLine(const std::vector<float>& color_rgba, float thickn
     trace_thickness_ = thickness;
 }
 
+void PawnSimApi::applyDisturbance(bool left) {
+    const double dist = left ? 2 : -2;
+    Pose pose = getPose();
+    const double yaw = VectorMath::getYaw(pose.orientation);
+    pose.position.x() += float(dist * sin(yaw));
+    pose.position.y() += float(-dist * cos(yaw));
+    disturbance_ = true;
+    setPose(pose, false);
+}
+
 void PawnSimApi::allowPassthroughToggleInput()
 {
     state_.passthrough_enabled = !state_.passthrough_enabled;
