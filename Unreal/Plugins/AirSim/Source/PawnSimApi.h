@@ -93,6 +93,7 @@ public: //implementation of VehicleSimApiBase
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const override;
     virtual std::string getRecordFileLine(bool is_header_line) const override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
+    virtual void applyDisturbance(bool left) override;
 
 protected: //additional interface for derived class
     virtual void pawnTick(float dt);
@@ -188,4 +189,6 @@ private: //vars
 
     std::unique_ptr<msr::airlib::Kinematics> kinematics_;
     std::unique_ptr<msr::airlib::Environment> environment_;
+    bool disturbance_ = false;
+
 };
