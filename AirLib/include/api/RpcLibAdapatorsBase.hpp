@@ -755,6 +755,29 @@ public:
         }
     };
 
+    struct Boundary
+    {
+        Vector3r pos;
+        std::vector<Vector3r> boundary;
+
+        MSGPACK_DEFINE_MAP(pos, boundary);
+
+        Boundary() {}
+
+        Boundary(const msr::airlib::Boundary& b)
+        {
+            pos = b.pos;
+            RpcLibAdapatorsBase::from(b.boundary, boundary);
+        }
+
+        msr::airlib::Boundary to() const
+        {
+            msr::airlib::Boundary b;
+            b.pos = pos.to();
+            RpcLibAdapatorsBase::to(boundary, b.boundary);
+            return b;
+        }
+    };
 
 };
 
