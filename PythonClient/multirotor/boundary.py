@@ -45,17 +45,21 @@ class BoundaryTest:
         
         airsim.wait_key('Press any key to set Boundary')
         self.client.simEnableCustomBoundaryData(True)
-        boundary = Boundary()
-        boundary.pos = state.kinematics_estimated.position
-        boundary.boundary = [Vector3r(10,-10,10),
-                             Vector3r(-10,10,10),
-                             Vector3r(10,10,10),
-                             Vector3r(-10,-10,10)]
-        self.client.simSetBoundary(boundary)
+        
 
         for i in range(1,5):
-            #lidarData = self.client.getLidarData();
-            time.sleep(5)
+            boundary = Boundary()
+            boundary.pos = state.kinematics_estimated.position
+            scale = 10/i
+            z = boundary.pos.z_val
+            boundary.boundary = [Vector3r(scale,-scale,z),
+                                 Vector3r(-scale,scale,z),
+                                 Vector3r(scale,scale,z),
+                                 Vector3r(-scale,-scale,z)]
+            self.client.simSetBoundary(boundary)
+            boundary = self.client.simGetBoundary()
+            print(boundary)
+            time.sleep(1)
 
     def stop(self):
 

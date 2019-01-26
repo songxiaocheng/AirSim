@@ -199,7 +199,7 @@ private: //vars
     
     bool disturbance_ = false;
 
-    bool boundary_enabled_ = false;
+    bool beam_enabled_ = false;
     Boundary boundary_;
-    bool boundary_custom_ = false;
+    bool is_passive_ = false;
 };
