@@ -196,7 +196,7 @@ private: //vars
     std::unique_ptr<msr::airlib::Kinematics> kinematics_;
     std::unique_ptr<msr::airlib::Environment> environment_;
 
-    bool boundary_enabled_ = false;
+    bool beam_enabled_ = false;
     Boundary boundary_;
-    bool boundary_custom_ = false;
+    bool is_passive_ = false;
 };
