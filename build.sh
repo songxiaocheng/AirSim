@@ -83,8 +83,8 @@ else
     # variable for build output
     build_dir=build_debug
     if [ "$(uname)" == "Darwin" ]; then
-        export CC=/usr/local/opt/llvm-5.0/bin/clang-5.0
-        export CXX=/usr/local/opt/llvm-5.0/bin/clang++-5.0
+        export CC=/usr/local/opt/llvm@5/bin/clang
+        export CXX=/usr/local/opt/llvm@5/bin/clang++
     else
         export CC="clang-5.0"
         export CXX="clang++-5.0"

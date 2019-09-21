@@ -60,11 +60,9 @@ else
     if [ "$(uname)" == "Darwin" ]; then # osx
         brew update
 
-        # brew install llvm@3.9
-        brew tap llvm-hs/homebrew-llvm
-        brew install llvm-5.0
-        export C_COMPILER=/usr/local/opt/llvm-5.0/bin/clang-5.0
-        export COMPILER=/usr/local/opt/llvm-5.0/bin/clang++-5.0
+        brew install llvm@5
+        export C_COMPILER=/usr/local/opt/llvm@5/bin/clang
+        export COMPILER=/usr/local/opt/llvm@5/bin/clang++
 
     else #linux
         #install clang and build tools
