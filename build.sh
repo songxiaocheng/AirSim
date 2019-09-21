@@ -48,7 +48,7 @@ if $gccBuild; then
     build_dir=build_gcc_debug
     # gcc tools
     gcc_ver=$(gcc -dumpfullversion)
-    gcc_path=$(which cmake)
+    gcc_path=$(which gcc)
     if [[ "$gcc_path" == "" ]] ; then
         echo "ERROR: run setup.sh to install a good version of gcc."
         exit 1
@@ -61,27 +61,14 @@ if $gccBuild; then
         export CXX="g++"
     fi
 else
-    #check for correct verion of llvm
-    if [[ ! -d "llvm-source-50" ]]; then
-        if [[ -d "llvm-source-39" ]]; then
-            echo "Hello there! We just upgraded AirSim to Unreal Engine 4.18."
-            echo "Here are few easy steps for upgrade so everything is new and shiny :)"
-            echo "https://github.com/Microsoft/AirSim/blob/master/docs/unreal_upgrade.md"
-            exit 1
-        else
-            echo "The llvm-souce-50 folder was not found! Mystery indeed."
-        fi
-    fi
-
-    # check for libc++
-    if [[ !(-d "./llvm-build/output/lib") ]]; then
-        echo "ERROR: clang++ and libc++ is necessary to compile AirSim and run it in Unreal engine"
-        echo "Please run setup.sh first."
-        exit 1
-    fi
-
     # variable for build output
     build_dir=build_debug
+    # clang tools
+    clang_path=$(which /usr/local/opt/llvm@5/bin/clang)
+    if [[ "$clang_path" == "" ]] ; then
+        echo "ERROR: run setup.sh to install a good version of llvm/clang."
+        exit 1
+    fi
     if [ "$(uname)" == "Darwin" ]; then
         export CC=/usr/local/opt/llvm@5/bin/clang
         export CXX=/usr/local/opt/llvm@5/bin/clang++

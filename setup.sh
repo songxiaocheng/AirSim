@@ -42,10 +42,11 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     brew update
 else # linux
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+    wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
     sudo apt-get -y update
 fi
 
-# 
+# Config gcc toolchain
 if $gccBuild; then # gcc toolchain
     gcc_ver=$(gcc -dumpfullversion)
     gcc_path=$(which cmake)
@@ -62,68 +63,15 @@ if $gccBuild; then # gcc toolchain
         echo "Already have good version of gcc: $gcc_ver"
     fi
 else # llvm/clang toolchain
-    if [ "$(uname)" == "Darwin" ]; then # osx
-        brew update
-        brew install llvm@5
-        export C_COMPILER=/usr/local/opt/llvm@5/bin/clang
-        export COMPILER=/usr/local/opt/llvm@5/bin/clang++
-    else # linux
-        #install clang and build tools
-        VERSION=$(lsb_release -rs | cut -d. -f1)
-        # Since Ubuntu 17 clang-5.0 is part of the core repository
-        # See https://packages.ubuntu.com/search?keywords=clang-5.0
-        if [ "$VERSION" -lt "17" ]; then
-            wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-            sudo apt-get update
+    clang_path=$(which /usr/local/opt/llvm@5/bin/clang)
+    if [[ "$clang_path" == "" ]] ; then
+        if [ "$(uname)" == "Darwin" ]; then # osx
+            brew install llvm@5
+        else # linux
+            sudo apt-get install -y clang-5.0 clang++-5.0
         fi
-        sudo apt-get install -y clang-5.0 clang++-5.0
-        export C_COMPILER=clang-5.0
-        export COMPILER=clang++-5.0
-    fi
-    # Below is alternative way to get clang by downloading binaries
-    # get clang, libc++
-    # sudo rm -rf llvm-build
-    # mkdir -p llvm-build/output
-    # wget "http://releases.llvm.org/4.0.1/clang+llvm-4.0.1-x86_64-linux-gnu-debian8.tar.xz"
-    # tar -xf "clang+llvm-4.0.1-x86_64-linux-gnu-debian8.tar.xz" -C llvm-build/output
-
-    # #other packages - not need for now
-    # #sudo apt-get install -y clang-3.9-doc libclang-common-3.9-dev libclang-3.9-dev libclang1-3.9 libclang1-3.9-dbg libllvm-3.9-ocaml-dev libllvm3.9 libllvm3.9-dbg lldb-3.9 llvm-3.9 llvm-3.9-dev llvm-3.9-doc llvm-3.9-examples llvm-3.9-runtime clang-format-3.9 python-clang-3.9 libfuzzer-3.9-dev
-
-    # get libc++ source
-    if ! $gccBuild; then
-        echo "### Installing llvm 5 libc++ library..."
-        if [[ ! -d "llvm-source-50" ]]; then
-            git clone --depth=1 -b release_50  https://github.com/llvm-mirror/llvm.git llvm-source-50
-            git clone --depth=1 -b release_50  https://github.com/llvm-mirror/libcxx.git llvm-source-50/projects/libcxx
-            git clone --depth=1 -b release_50  https://github.com/llvm-mirror/libcxxabi.git llvm-source-50/projects/libcxxabi
-        else
-            echo "folder llvm-source-50 already exists, skipping git clone..."
-        fi
-        #build libc++
-        if [ "$(uname)" == "Darwin" ]; then
-            rm -rf llvm-build
-        else
-            sudo rm -rf llvm-build
-        fi
-        mkdir -p llvm-build
-        pushd llvm-build >/dev/null
-
-        "$CMAKE" -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} \
-            -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF -DLIBCXX_INSTALL_EXPERIMENTAL_LIBRARY=OFF \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=./output \
-                    ../llvm-source-50
-
-        make cxx -j`nproc`
-
-        #install libc++ locally in output folder
-        if [ "$(uname)" == "Darwin" ]; then
-            make install-libcxx install-libcxxabi
-        else
-            sudo make install-libcxx install-libcxxabi
-        fi
-
-        popd >/dev/null
+    else
+        echo "Already have good version of llvm/clang: 5.0"
     fi
 fi
 
