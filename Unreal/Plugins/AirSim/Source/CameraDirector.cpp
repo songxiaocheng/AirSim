@@ -51,7 +51,7 @@ void ACameraDirector::initializeForBeginPlay(ECameraDirectorMode view_mode,
     AActor* follow_actor, APIPCamera* fpv_camera, APIPCamera* front_camera, APIPCamera* back_camera)
 {
     manual_pose_controller_ = NewObject<UManualPoseController>(this, "CameraDirector_ManualPoseController");
-    manual_pose_controller_->initializeForPlay();
+    manual_pose_controller_->initializeForPlay(InputComponent);
 
     setupInputBindings();
 

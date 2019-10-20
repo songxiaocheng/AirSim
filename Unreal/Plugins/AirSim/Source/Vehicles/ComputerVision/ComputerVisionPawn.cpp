@@ -65,7 +65,7 @@ void AComputerVisionPawn::initializeForBeginPlay()
     camera_back_center_->AttachToComponent(camera_back_center_base_, FAttachmentTransformRules::KeepRelativeTransform);
 
     manual_pose_controller_ = NewObject<UManualPoseController>(this, "ComputerVision_ManualPoseController");
-    manual_pose_controller_->initializeForPlay();
+    manual_pose_controller_->initializeForPlay(InputComponent);
     manual_pose_controller_->setActor(this);
 }
 
