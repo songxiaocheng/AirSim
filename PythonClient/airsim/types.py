@@ -76,7 +76,7 @@ class Vector3r(MsgpackMixin):
 
     def __mul__(self, other):
         if type(other) in [int, float] + np.sctypes['int'] + np.sctypes['uint'] + np.sctypes['float']:
-            return Vector3r(self.x_val*other, self.y_val*other, self.z_val)
+            return Vector3r(self.x_val*other, self.y_val*other, self.z_val*other)
         else: 
             raise TypeError('unsupported operand type(s) for *: %s and %s' % ( str(type(self)), str(type(other))) )
 
@@ -197,7 +197,9 @@ class Pose(MsgpackMixin):
     position = Vector3r()
     orientation = Quaternionr()
 
-    def __init__(self, position_val = Vector3r(), orientation_val = Quaternionr()):
+    def __init__(self, position_val = None, orientation_val = None):
+        position_val = position_val if position_val != None else Vector3r()
+        orientation_val = orientation_val if orientation_val != None else Quaternionr()
         self.position = position_val
         self.orientation = orientation_val
 
@@ -360,3 +362,39 @@ class LidarData(MsgpackMixin):
 class Boundary(MsgpackMixin):
     pos = Vector3r()
     boundary = 0.0
+
+class ImuData(MsgpackMixin):
+    time_stamp = np.uint64(0)
+    orientation = Quaternionr()
+    angular_velocity = Vector3r()
+    linear_acceleration = Vector3r()
+
+class BarometerData(MsgpackMixin):
+    time_stamp = np.uint64(0)
+    altitude = Quaternionr()
+    pressure = Vector3r()
+    qnh = Vector3r()
+
+class MagnetometerData(MsgpackMixin):
+    time_stamp = np.uint64(0)
+    magnetic_field_body = Vector3r()
+    magnetic_field_covariance = 0.0
+
+class GnssFixType(MsgpackMixin):
+    GNSS_FIX_NO_FIX = 0
+    GNSS_FIX_TIME_ONLY = 1
+    GNSS_FIX_2D_FIX = 2
+    GNSS_FIX_3D_FIX = 3
+
+class GnssReport(MsgpackMixin): 
+    geo_point = GeoPoint();
+    eph = 0.0
+    epv = 0.0;
+    velocity = Vector3r();
+    fix_type = GnssFixType();
+    time_utc = np.uint64(0);
+
+class GpsData(MsgpackMixin):
+    time_stamp = np.uint64(0)
+    gnss = GnssReport()
+    is_valid = False

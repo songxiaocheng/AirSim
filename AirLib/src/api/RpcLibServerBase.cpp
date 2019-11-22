@@ -9,7 +9,6 @@
 
 #include "api/RpcLibServerBase.hpp"
 
-
 #include "common/Common.hpp"
 STRICT_MODE_OFF
 
@@ -30,6 +29,7 @@ STRICT_MODE_OFF
 #include "common/common_utils/WindowsApisCommonPost.hpp"
 
 #include "api/RpcLibAdapatorsBase.hpp"
+#include <functional>
 
 STRICT_MODE_ON
 
@@ -56,10 +56,12 @@ typedef msr::airlib_rpclib::RpcLibAdapatorsBase RpcLibAdapatorsBase;
 RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string& server_address, uint16_t port)
     : api_provider_(api_provider)
 {
+
     if (server_address == "")
         pimpl_.reset(new impl(port));
     else
         pimpl_.reset(new impl(server_address, port));
+
     pimpl_->server.bind("ping", [&]() -> bool { return true; });
     pimpl_->server.bind("getServerVersion", []() -> int {
         return 1;
@@ -138,6 +140,11 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     });
 
     pimpl_->server.
+        bind("simGetLidarSegmentation", [&](const std::string& lidar_name, const std::string& vehicle_name) -> std::vector<int> {
+        return getVehicleApi(vehicle_name)->getLidarSegmentation(lidar_name);
+    });
+
+    pimpl_->server.
         bind("simSetSegmentationObjectID", [&](const std::string& mesh_name, int object_id, bool is_name_regex) -> bool {
         return getWorldSimApi()->setSegmentationObjectID(mesh_name, object_id, is_name_regex);
     });
@@ -147,11 +154,19 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     });    
 
     pimpl_->server.bind("reset", [&]() -> void {
+        //Exit if already resetting.
+        static bool resetInProgress;
+        if (resetInProgress)
+            return;
+
+        //Reset
+        resetInProgress = true;
         auto* sim_world_api = getWorldSimApi();
         if (sim_world_api)
             sim_world_api->reset();
         else
             getVehicleApi("")->reset();
+            resetInProgress = false;
     });
 
     pimpl_->server.bind("simPrintLogMessage", [&](const std::string& message, const std::string& message_param, unsigned char severity) -> void {
@@ -168,6 +183,31 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::LidarData(lidar_data);
     });
 
+    pimpl_->server.bind("getImuData", [&](const std::string& imu_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuData {
+        const auto& imu_data = getVehicleApi(vehicle_name)->getImuData(imu_name);
+        return RpcLibAdapatorsBase::ImuData(imu_data);
+    });
+
+    pimpl_->server.bind("getBarometerData", [&](const std::string& barometer_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::BarometerData {
+        const auto& barometer_data = getVehicleApi(vehicle_name)->getBarometerData(barometer_name);
+        return RpcLibAdapatorsBase::BarometerData(barometer_data);
+    });
+
+    pimpl_->server.bind("getMagnetometerData", [&](const std::string& magnetometer_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::MagnetometerData {
+        const auto& magnetometer_data = getVehicleApi(vehicle_name)->getMagnetometerData(magnetometer_name);
+        return RpcLibAdapatorsBase::MagnetometerData(magnetometer_data);
+    });
+
+    pimpl_->server.bind("getGpsData", [&](const std::string& gps_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::GpsData {
+        const auto& gps_data = getVehicleApi(vehicle_name)->getGpsData(gps_name);
+        return RpcLibAdapatorsBase::GpsData(gps_data);
+    });
+
+    pimpl_->server.bind("getDistanceSensorData", [&](const std::string& distance_sensor_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::DistanceSensorData {
+        const auto& distance_sensor_data = getVehicleApi(vehicle_name)->getDistanceSensorData(distance_sensor_name);
+        return RpcLibAdapatorsBase::DistanceSensorData(distance_sensor_data);
+    });
+
     pimpl_->server.bind("simGetCameraInfo", [&](const std::string& camera_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::CameraInfo {
         const auto& camera_info = getVehicleSimApi(vehicle_name)->getCameraInfo(camera_name);
         return RpcLibAdapatorsBase::CameraInfo(camera_info);
@@ -181,6 +221,10 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     pimpl_->server.bind("simGetCollisionInfo", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::CollisionInfo {
         const auto& collision_info = getVehicleSimApi(vehicle_name)->getCollisionInfo(); 
         return RpcLibAdapatorsBase::CollisionInfo(collision_info);
+    });
+
+    pimpl_->server.bind("simListSceneObjects", [&](const std::string& name_regex) -> std::vector<string> {
+        return getWorldSimApi()->listSceneObjects(name_regex);
     });
 
     pimpl_->server.bind("simGetObjectPose", [&](const std::string& object_name) -> RpcLibAdapatorsBase::Pose {
