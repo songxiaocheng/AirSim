@@ -36,7 +36,6 @@ case $key in
 esac
 done
 
-if $gccBuild; then
 # Update the package repository
 if [ "$(uname)" == "Darwin" ]; then # osx
     brew update
