@@ -37,7 +37,16 @@ esac
 done
 
 if $gccBuild; then
-    # gcc tools
+# Update the package repository
+if [ "$(uname)" == "Darwin" ]; then # osx
+    brew update
+else # linux
+    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+    sudo apt-get -y update
+fi
+
+# Get Compiler Ready
+if $gccBuild; then # gcc toolchain
     gcc_ver=$(gcc -dumpfullversion)
     gcc_path=$(which cmake)
     if [[ "$gcc_path" == "" ]] ; then
@@ -45,28 +54,20 @@ if $gccBuild; then
     fi
     if version_less_than_equal_to $gcc_ver $MIN_GCC_VERSION; then
         if [ "$(uname)" == "Darwin" ]; then # osx
-            brew update
             brew install gcc-6 g++-6
-        else
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get -y update
+        else # linux
             sudo apt-get install -y gcc-6 g++-6
         fi
     else
         echo "Already have good version of gcc: $gcc_ver"
     fi
-else
-    # llvm tools
+else # llvm/clang toolchain
     if [ "$(uname)" == "Darwin" ]; then # osx
-        brew update
-
         brew install llvm@5
         export C_COMPILER=/usr/local/opt/llvm@5/bin/clang
         export COMPILER=/usr/local/opt/llvm@5/bin/clang++
-
-    else #linux
+    else # linux
         #install clang and build tools
-
         VERSION=$(lsb_release -rs | cut -d. -f1)
         # Since Ubuntu 17 clang-5.0 is part of the core repository
         # See https://packages.ubuntu.com/search?keywords=clang-5.0
@@ -80,57 +81,53 @@ else
     fi
 fi
 
-#give user perms to access USB port - this is not needed if not using PX4 HIL
-#TODO: figure out how to do below in travis
+# Give user perms to access USB port - this is not needed if not using PX4 HIL
+# TODO: figure out how to do below in travis
 if [ "$(uname)" == "Darwin" ]; then # osx
-    if [[ ! -z "${whoami}" ]]; then #this happens when running in travis
+    if [[ ! -z "${whoami}" ]]; then # this happens when running in travis
         sudo dseditgroup -o edit -a `whoami` -t user dialout
     fi
-
-    brew install wget
-    brew install coreutils
-    brew install cmake  # should get cmake 3.8
-
-else #linux
-    if [[ ! -z "${whoami}" ]]; then #this happens when running in travis
+else # linux
+    if [[ ! -z "${whoami}" ]]; then # this happens when running in travis
         sudo /usr/sbin/useradd -G dialout $USER
         sudo usermod -a -G dialout $USER
     fi
+fi
 
-    #install additional tools
+# Install additional tools for obtaining and building the dependencies
+if [ "$(uname)" == "Darwin" ]; then # osx
+    brew install wget
+    brew install coreutils
+    # unzip is built-in in mac
+else # linux
     sudo apt-get install -y build-essential
     sudo apt-get install -y unzip
+    # wget is built-in in Ubuntu 16.04
+fi
 
-    cmake_ver=$(cmake --version 2>&1 | head -n1 | cut -d ' ' -f3 | awk '{print $NF}')
-    cmake_path=$(which cmake)
-    if [[ "$cmake_path" == "" ]] ; then
-        cmake_ver=0
+# Get CMake ready
+cmake_ver=$(cmake --version 2>&1 | head -n1 | cut -d ' ' -f3 | awk '{print $NF}')
+cmake_path=$(which cmake)
+if [[ "$cmake_path" == "" ]] ; then
+    cmake_ver=0
+fi
+if version_less_than_equal_to $cmake_ver $MIN_CMAKE_VERSION; then
+    if [[ ! -d "cmake_build/bin" ]]; then
+        echo "Downloading cmake..."
+        wget https://github.com/Kitware/CMake/releases/download/v${MIN_CMAKE_VERSION}/cmake-${MIN_CMAKE_VERSION}-$(uname)-x86_64.tar.gz -O cmake.tar.gz
+        rm -rf ./cmake_build
+        mkdir ./cmake_build
+        tar -xzf cmake.tar.gz -C cmake_build --strip-components 1
+        rm cmake.tar.gz
     fi
-
-    #download cmake - v3.10.2 is not out of box in Ubuntu 16.04
-    if version_less_than_equal_to $gcc_ver $MIN_GCC_VERSION; then
-        if [[ ! -d "cmake_build/bin" ]]; then
-            echo "Downloading cmake..."
-            wget https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz \
-                -O cmake.tar.gz
-            tar -xzf cmake.tar.gz
-            rm cmake.tar.gz
-            rm -rf ./cmake_build
-            mv ./cmake-3.10.2 ./cmake_build
-            pushd cmake_build
-            ./bootstrap
-            make
-            popd
-        fi
-        if [ "$(uname)" == "Darwin" ]; then
-            CMAKE="$(greadlink -f cmake_build/bin/cmake)"
-        else
-            CMAKE="$(readlink -f cmake_build/bin/cmake)"
-        fi
-    else
-        echo "Already have good version of cmake: $cmake_ver"
-        CMAKE=$(which cmake)
+    if [ "$(uname)" == "Darwin" ]; then # osx
+        CMAKE="$(pwd)/cmake_build/CMake.app/Contents/bin/cmake"
+    else # linux
+        CMAKE="$(pwd)/cmake_build/bin/cmake"
     fi
+else
+    echo "Already have good version of cmake: $cmake_ver"
+    CMAKE=$(which cmake)
 fi
 
 # Download rpclib
@@ -187,44 +184,44 @@ fi
 # #other packages - not need for now
 # #sudo apt-get install -y clang-3.9-doc libclang-common-3.9-dev libclang-3.9-dev libclang1-3.9 libclang1-3.9-dbg libllvm-3.9-ocaml-dev libllvm3.9 libllvm3.9-dbg lldb-3.9 llvm-3.9 llvm-3.9-dev llvm-3.9-doc llvm-3.9-examples llvm-3.9-runtime clang-format-3.9 python-clang-3.9 libfuzzer-3.9-dev
 
-#get libc++ source
-if ! $gccBuild; then
-    echo "### Installing llvm 5 libc++ library..."
-    if [[ ! -d "llvm-source-50" ]]; then
-        git clone --depth=1 -b release_50  https://github.com/llvm-mirror/llvm.git llvm-source-50
-        git clone --depth=1 -b release_50  https://github.com/llvm-mirror/libcxx.git llvm-source-50/projects/libcxx
-        git clone --depth=1 -b release_50  https://github.com/llvm-mirror/libcxxabi.git llvm-source-50/projects/libcxxabi
-    else
-        echo "folder llvm-source-50 already exists, skipping git clone..."
-    fi
-    #build libc++
-    if [ "$(uname)" == "Darwin" ]; then
-        rm -rf llvm-build
-    else
-        sudo rm -rf llvm-build
-    fi
-    mkdir -p llvm-build
-    pushd llvm-build >/dev/null
+# get libc++ source
+# if ! $gccBuild; then
+#     echo "### Installing llvm 5 libc++ library..."
+#     if [[ ! -d "llvm-source-50" ]]; then
+#         git clone --depth=1 -b release_50  https://github.com/llvm-mirror/llvm.git llvm-source-50
+#         git clone --depth=1 -b release_50  https://github.com/llvm-mirror/libcxx.git llvm-source-50/projects/libcxx
+#         git clone --depth=1 -b release_50  https://github.com/llvm-mirror/libcxxabi.git llvm-source-50/projects/libcxxabi
+#     else
+#         echo "folder llvm-source-50 already exists, skipping git clone..."
+#     fi
+#     #build libc++
+#     if [ "$(uname)" == "Darwin" ]; then
+#         rm -rf llvm-build
+#     else
+#         sudo rm -rf llvm-build
+#     fi
+#     mkdir -p llvm-build
+#     pushd llvm-build >/dev/null
 
-    "$CMAKE" -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} \
-          -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF -DLIBCXX_INSTALL_EXPERIMENTAL_LIBRARY=OFF \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=./output \
-                ../llvm-source-50
+#     "$CMAKE" -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} \
+#           -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF -DLIBCXX_INSTALL_EXPERIMENTAL_LIBRARY=OFF \
+#           -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=./output \
+#                 ../llvm-source-50
 
-    make cxx -j`nproc`
+#     make cxx -j`nproc`
 
-    #install libc++ locally in output folder
-    if [ "$(uname)" == "Darwin" ]; then
-        make install-libcxx install-libcxxabi
-    else
-        sudo make install-libcxx install-libcxxabi
-    fi
+#     #install libc++ locally in output folder
+#     if [ "$(uname)" == "Darwin" ]; then
+#         make install-libcxx install-libcxxabi
+#     else
+#         sudo make install-libcxx install-libcxxabi
+#     fi
 
-    popd >/dev/null
-fi
+#     popd >/dev/null
+# fi
 
+# Download Eigen3
 echo "Installing EIGEN library..."
-
 if [ "$(uname)" == "Darwin" ]; then
     rm -rf ./AirLib/deps/eigen3/Eigen
 else
