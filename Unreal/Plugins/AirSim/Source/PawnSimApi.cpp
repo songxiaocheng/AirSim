@@ -52,6 +52,7 @@ void PawnSimApi::initialize()
     //add listener for pawn's collision event
     params_.pawn_events->getCollisionSignal().connect_member(this, &PawnSimApi::onCollision);
     params_.pawn_events->getPawnTickSignal().connect_member(this, &PawnSimApi::pawnTick);
+    boundary_ = Boundary(kinematics_->getPose().position, {});
 }
 
 void PawnSimApi::setStartPosition(const FVector& position, const FRotator& rotator)
@@ -363,6 +364,21 @@ void PawnSimApi::toggleTrace()
     }
 }
 
+void PawnSimApi::toggleBoundary()
+{
+    beam_enabled_ = !beam_enabled_;
+}
+
+void PawnSimApi::applyDisturbance(bool left) {
+    const double dist = left ? 2 : -2;
+    Pose pose = getPose();
+    const double yaw = VectorMath::getYaw(pose.orientation);
+    pose.position.x() += float(dist * sin(yaw));
+    pose.position.y() += float(-dist * cos(yaw));
+    disturbance_ = true;
+    setPose(pose, false);
+}
+
 void PawnSimApi::allowPassthroughToggleInput()
 {
     state_.passthrough_enabled = !state_.passthrough_enabled;
@@ -432,6 +448,60 @@ void PawnSimApi::setPose(const Pose& pose, bool ignore_collision)
     }, true);
 }
 
+PawnSimApi::Boundary PawnSimApi::getBoundary() const
+{
+    return boundary_;
+}
+
+void PawnSimApi::setBoundary(const Boundary& boundary)
+{
+    UAirBlueprintLib::RunCommandOnGameThread([this, boundary]() {
+        boundary_ = boundary;
+    }, true);
+}
+
+void PawnSimApi::enableCustomBoundaryData(bool is_enable)
+{
+    if(is_enable ^ is_passive_){
+        boundary_ = Boundary(kinematics_->getPose().position,{});
+    }
+    is_passive_ = is_enable;
+}
+
+void PawnSimApi::showBoundary(float dt)
+{
+    auto* world = params_.pawn->GetWorld();
+    if (world == nullptr) return;
+    if (!is_passive_) {
+        msr::airlib::vector<msr::airlib::Vector3r> ps;
+        FHitResult OutHit;
+        const FVector Start = params_.pawn->GetActorLocation() - 50 * FVector::UpVector;
+        const int N = 60;
+        const FCollisionQueryParams CollisionParams;
+        //UKismetSystemLibrary::FlushPersistentDebugLines(params_.pawn->GetWorld());
+        for (int i = 0; i < N; i++) {
+            const double theta = 2.0 * i * M_PI / N;
+            const FVector ForwardVector(cos(theta), sin(theta), 0);
+            const FVector End = ((ForwardVector * 2000.f) + Start);
+            FVector point = End;
+            if (world->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams)) {
+                point = OutHit.ImpactPoint;
+            }
+            ps.emplace_back(ned_transform_.toLocalNed(point));
+        }
+        const msr::airlib::Vector3r pos = ned_transform_.toLocalNed(Start);
+        Boundary boundary(pos, ps);
+        PawnSimApi::setBoundary(boundary);
+    }
+    if (beam_enabled_) {
+        for (const auto& point : boundary_.boundary) {
+            const FVector Start = ned_transform_.fromLocalNed(boundary_.pos);
+            const FVector End = ned_transform_.fromLocalNed(point);
+            UKismetSystemLibrary::DrawDebugLine(static_cast<UObject*>(world), Start, End, FColor::Green, 2 * dt, 5);
+        }
+    }
+}
+
 void PawnSimApi::setPoseInternal(const Pose& pose, bool ignore_collision)
 {
     //translate to new PawnSimApi position & orientation from NED to NEU
@@ -455,7 +525,15 @@ void PawnSimApi::setPoseInternal(const Pose& pose, bool ignore_collision)
         params_.pawn->SetActorLocationAndRotation(position, orientation, true);
 
     if (state_.tracing_enabled && (state_.last_position - position).SizeSquared() > 0.25) {
-        DrawDebugLine(params_.pawn->GetWorld(), state_.last_position, position, FColor::Purple, true, -1.0F, 0, 3.0F);
+        if (UWorld* World = params_.pawn->GetWorld()) {
+            if (disturbance_) {
+                ::DrawDebugLine(World, state_.last_position, position, FColor::Red, true, -1, SDPG_World, 20.0f);
+                disturbance_ = false;
+            }
+            else {
+                ::DrawDebugLine(World, state_.last_position, position, FColor::Yellow, true, -1, SDPG_World, 20.0f);
+            }
+        }
         state_.last_position = position;
     }
     else if (!state_.tracing_enabled) {

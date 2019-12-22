@@ -111,9 +111,19 @@ class VehicleClient:
     def simGetVehiclePose(self, vehicle_name = ''):
         pose = self.client.call('simGetVehiclePose', vehicle_name)
         return Pose.from_msgpack(pose)
+
+    def simGetBoundary(self, vehicle_name = ''):
+        boundary = self.client.call('simGetBoundary', vehicle_name)
+        return Boundary.from_msgpack(boundary)
+    def simSetBoundary(self, boundary, vehicle_name = ''):
+        self.client.call('simSetBoundary', boundary, vehicle_name)
+    def simEnableCustomBoundaryData(self, is_enable, vehicle_name = ''):
+        self.client.call('simEnableCustomBoundaryData', is_enable, vehicle_name)
+
     def simGetObjectPose(self, object_name):
         pose = self.client.call('simGetObjectPose', object_name)
         return Pose.from_msgpack(pose)
+
     def simSetObjectPose(self, object_name, pose, teleport = True):
         return self.client.call('simSetObjectPose', object_name, pose, teleport)
 
