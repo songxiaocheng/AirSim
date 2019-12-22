@@ -90,6 +90,11 @@ void ASimHUD::inputEventToggleTrace()
     simmode_->getVehicleSimApi()->toggleTrace();
 }
 
+void ASimHUD::inputEventToggleBoundary()
+{
+    simmode_->getVehicleSimApi()->toggleBoundary();
+}
+
 ASimHUD::ImageType ASimHUD::getSubwindowCameraType(int window_index)
 {
     //TODO: index check
@@ -236,6 +241,7 @@ void ASimHUD::setupInputBindings()
     UAirBlueprintLib::BindActionToKey("InputEventToggleReport", EKeys::Semicolon, this, &ASimHUD::inputEventToggleReport);
     UAirBlueprintLib::BindActionToKey("InputEventToggleHelp", EKeys::F1, this, &ASimHUD::inputEventToggleHelp);
     UAirBlueprintLib::BindActionToKey("InputEventToggleTrace", EKeys::T, this, &ASimHUD::inputEventToggleTrace);
+    UAirBlueprintLib::BindActionToKey("InputEventToggleBoundary", EKeys::L, this, &ASimHUD::inputEventToggleBoundary);
 
     UAirBlueprintLib::BindActionToKey("InputEventToggleSubwindow0", EKeys::One, this, &ASimHUD::inputEventToggleSubwindow0);
     UAirBlueprintLib::BindActionToKey("InputEventToggleSubwindow1", EKeys::Two, this, &ASimHUD::inputEventToggleSubwindow1);

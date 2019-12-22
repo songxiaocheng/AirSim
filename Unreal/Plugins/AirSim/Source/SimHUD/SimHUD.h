@@ -30,6 +30,7 @@ public:
     void inputEventToggleReport();
     void inputEventToggleHelp();
     void inputEventToggleTrace();
+    void inputEventToggleBoundary();
     void inputEventToggleSubwindow0();
     void inputEventToggleSubwindow1();
     void inputEventToggleSubwindow2();

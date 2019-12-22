@@ -394,3 +394,7 @@ class GpsData(MsgpackMixin):
     time_stamp = np.uint64(0)
     gnss = GnssReport()
     is_valid = False
+
+class Boundary(MsgpackMixin):
+    pos = Vector3r()
+    boundary = 0.0

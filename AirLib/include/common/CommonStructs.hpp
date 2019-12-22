@@ -305,5 +305,15 @@ struct LidarData {
     {}
 };
 
+struct Boundary {
+    Vector3r pos;
+    vector<Vector3r> boundary;
+
+    Boundary() {}
+
+    Boundary(const Vector3r& pos, const vector<Vector3r>& boundary) :pos(pos), boundary(boundary)
+    {}
+};
+
 }} //namespace
 #endif
