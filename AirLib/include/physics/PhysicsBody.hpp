@@ -161,6 +161,9 @@ public: //methods
     }
     void setPose(const Pose& pose)
     {
+        // the `grounded_` is set true when starting playing, 
+        // but it is expected to be false when clients tried setting pose.
+        grounded_ = false;
         return kinematics_->setPose(pose);
     }
     const Twist& getTwist() const
