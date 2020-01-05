@@ -112,6 +112,15 @@ class VehicleClient:
         pose = self.client.call('simGetVehiclePose', vehicle_name)
         return Pose.from_msgpack(pose)
 
+    def simSetTraceColor(self, r, g, b, a=255, thickness=1.0, vehicle_name = ''):
+        assert isinstance(r, int) and isinstance(g, int) and isinstance(b, int) and isinstance(a, int)
+        assert 0 <= r < 256 and 0 <= g < 256 and 0 <= b < 256 and 0 <= a < 256
+        assert isinstance(thickness, float)
+        assert thickness>=0
+        pose = self.client.call('simGetVehiclePose', r, g, b, a)
+        return Pose.from_msgpack(pose)
+
+
     def simGetBoundary(self, vehicle_name = ''):
         boundary = self.client.call('simGetBoundary', vehicle_name)
         return Boundary.from_msgpack(boundary)

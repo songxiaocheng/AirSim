@@ -91,6 +91,7 @@ public: //implementation of VehicleSimApiBase
         return params_.vehicle_name;
     }
     virtual void toggleTrace() override;
+	virtual void setTraceColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float thickness) override;
     virtual void toggleBoundary() override;
 
     virtual void updateRenderedState(float dt) override;
@@ -196,6 +197,9 @@ private: //vars
 
     std::unique_ptr<msr::airlib::Kinematics> kinematics_;
     std::unique_ptr<msr::airlib::Environment> environment_;
+
+	FColor trace_color_;
+	float thickness_;
 
     bool beam_enabled_ = false;
     Boundary boundary_;

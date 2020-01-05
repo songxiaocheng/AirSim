@@ -364,6 +364,11 @@ void PawnSimApi::toggleTrace()
     }
 }
 
+void PawnSimApi::setTraceColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float thickness) {
+	trace_color_ = FColor(r, g, b, a);
+	thickness_ = thickness;
+}
+
 void PawnSimApi::toggleBoundary()
 {
     beam_enabled_ = !beam_enabled_;
@@ -527,11 +532,11 @@ void PawnSimApi::setPoseInternal(const Pose& pose, bool ignore_collision)
     if (state_.tracing_enabled && (state_.last_position - position).SizeSquared() > 0.25) {
         if (UWorld* World = params_.pawn->GetWorld()) {
             if (disturbance_) {
-                ::DrawDebugLine(World, state_.last_position, position, FColor::Red, true, -1, SDPG_World, 20.0f);
+                ::DrawDebugLine(World, state_.last_position, position, FColor::Red, true, -1, SDPG_World, thickness_);
                 disturbance_ = false;
             }
             else {
-                ::DrawDebugLine(World, state_.last_position, position, FColor::Yellow, true, -1, SDPG_World, 20.0f);
+                ::DrawDebugLine(World, state_.last_position, position, trace_color_, true, -1, SDPG_World, thickness_);
             }
         }
         state_.last_position = position;

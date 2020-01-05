@@ -126,6 +126,10 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::Pose(pose);
     });
 
+	pimpl_->server.bind("simSetTraceColor", [&](uint8_t r, uint8_t g, uint8_t b, uint8_t a, float thickness, const std::string& vehicle_name) -> void {
+		getVehicleSimApi(vehicle_name)->setTraceColor(r, g, b, a, thickness);
+	});
+
     pimpl_->server.bind("simSetBoundary", [&](const RpcLibAdapatorsBase::Boundary &boundary, const std::string& vehicle_name) -> void {
         getVehicleSimApi(vehicle_name)->setBoundary(boundary.to());
     });
