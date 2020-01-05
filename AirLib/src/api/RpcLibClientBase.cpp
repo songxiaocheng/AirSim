@@ -219,6 +219,11 @@ void RpcLibClientBase::simSetVehiclePose(const Pose& pose, bool ignore_collision
     pimpl_->client.call("simSetVehiclePose", RpcLibAdapatorsBase::Pose(pose), ignore_collision, vehicle_name);
 }
 
+void RpcLibClientBase::simSetTraceColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float thickness, const std::string & vehicle_name)
+{
+	pimpl_->client.call("simSetTraceColor", r, g, b, a, thickness, vehicle_name);
+}
+
 vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name)
 {
     const auto& response_adaptor = pimpl_->client.call("simGetImages", 

@@ -62,6 +62,7 @@ public:
     virtual std::string getVehicleName() const = 0;
     virtual std::string getRecordFileLine(bool is_header_line) const = 0;
     virtual void toggleTrace() = 0;
+	virtual void setTraceColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float thickness) = 0;
 
     //use pointer here because of derived classes for VehicleSetting
     const AirSimSettings::VehicleSetting* getVehicleSetting() const

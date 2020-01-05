@@ -4,6 +4,7 @@
 #ifndef air_RpcLibClientBase_hpp
 #define air_RpcLibClientBase_hpp
 
+#include <cstdint>
 #include "common/Common.hpp"
 #include "common/CommonStructs.hpp"
 #include "common/ImageCaptureBase.hpp"
@@ -51,7 +52,7 @@ public:
     vector<string> simListSceneObjects(const string& name_regex = string(".*")) const;
     Pose simGetObjectPose(const std::string& object_name) const;
     bool simSetObjectPose(const std::string& object_name, const Pose& pose, bool teleport = true);
-    
+
     //task management APIs
     void cancelLastTask(const std::string& vehicle_name = "");
     virtual RpcLibClientBase* waitOnLastTask(bool* task_result = nullptr, float timeout_sec = Utils::nan<float>());
@@ -80,6 +81,7 @@ public:
 
     Pose simGetVehiclePose(const std::string& vehicle_name = "") const;
     void simSetVehiclePose(const Pose& pose, bool ignore_collision, const std::string& vehicle_name = "");
+	void simSetTraceColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a=255u, float thickness=3.0f, const std::string& vehicle_name = "");
 
     vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "");
     vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "");
