@@ -189,6 +189,36 @@ void PawnSimApi::setTraceLine(const std::vector<float>& color_rgba, float thickn
         "setTraceLine is not supported on unity").c_str());
 }
 
+void PawnSimApi::applyDisturbance(bool left)
+{
+    throw std::invalid_argument(common_utils::Utils::stringf(
+        "applyDisturbance is not supported on unity").c_str());
+}
+
+PawnSimApi::Boundary PawnSimApi::getBoundary() const
+{
+	throw std::invalid_argument(common_utils::Utils::stringf(
+        "getBoundary is not supported on unity").c_str());
+	return PawnSimApi::Boundary();
+}
+
+void PawnSimApi::setBoundary(const Boundary& boundary)
+{
+	throw std::invalid_argument(common_utils::Utils::stringf(
+        "setBoundary is not supported on unity").c_str());
+}
+
+void PawnSimApi::enableCustomBoundaryData(bool is_enable)
+{
+	throw std::invalid_argument(common_utils::Utils::stringf(
+        "enableCustomBoundaryData is not supported on unity").c_str());
+}
+
+void PawnSimApi::toggleBoundary()
+{
+	beam_enabled_ = !beam_enabled_;
+}
+
 void PawnSimApi::allowPassthroughToggleInput()
 {
 	state_.passthrough_enabled = !state_.passthrough_enabled;

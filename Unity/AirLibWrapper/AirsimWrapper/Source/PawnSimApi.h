@@ -22,6 +22,7 @@ public:
 	typedef msr::airlib::GeoPoint GeoPoint;
 	typedef msr::airlib::Vector3r Vector3r;
 	typedef msr::airlib::Pose Pose;
+	typedef msr::airlib::Boundary Boundary;
 	typedef msr::airlib::Quaternionr Quaternionr;
 	typedef msr::airlib::CollisionInfo CollisionInfo;
 	typedef msr::airlib::VectorMath VectorMath;
@@ -92,6 +93,11 @@ public:
 	void OnCollision(msr::airlib::CollisionInfo collisionInfo);
 	const NedTransform& getNedTransform() const;
 	virtual void pawnTick(float dt);
+	virtual Boundary getBoundary() const override;
+    virtual void setBoundary(const Boundary& boundary) override;
+    virtual void enableCustomBoundaryData(bool is_enable) override;
+	virtual void toggleBoundary() override;
+	virtual void applyDisturbance(bool left) override;
 
 private:
 	Params params_;
@@ -116,4 +122,6 @@ private:
 
     std::unique_ptr<msr::airlib::Kinematics> kinematics_;
     std::unique_ptr<msr::airlib::Environment> environment_;
+
+	bool beam_enabled_ = false;
 };
