@@ -375,6 +375,16 @@ void PawnSimApi::toggleBoundary()
     beam_enabled_ = !beam_enabled_;
 }
 
+void PawnSimApi::applyDisturbance(bool left) {
+    const double dist = left ? 2 : -2;
+    Pose pose = getPose();
+    const double yaw = VectorMath::getYaw(pose.orientation);
+    pose.position.x() += float(dist * sin(yaw));
+    pose.position.y() += float(-dist * cos(yaw));
+    disturbance_ = true;
+    setPose(pose, false);
+}
+
 void PawnSimApi::allowPassthroughToggleInput()
 {
     state_.passthrough_enabled = !state_.passthrough_enabled;
@@ -529,7 +539,15 @@ void PawnSimApi::setPoseInternal(const Pose& pose, bool ignore_collision)
         params_.pawn->SetActorLocationAndRotation(position, orientation, true);
 
     if (state_.tracing_enabled && (state_.last_position - position).SizeSquared() > 0.25) {
-        DrawDebugLine(params_.pawn->GetWorld(), state_.last_position, position, trace_color_, true, -1.0F, 0, trace_thickness_);
+        if (UWorld* World = params_.pawn->GetWorld()) {
+            if (disturbance_) {
+                ::DrawDebugLine(World, state_.last_position, position, FColor::Red, true, -1, SDPG_World, trace_thickness_);
+                disturbance_ = false;
+            }
+            else {
+                ::DrawDebugLine(World, state_.last_position, position, trace_color_, true, -1, SDPG_World, trace_thickness_);
+            }
+        }
         state_.last_position = position;
     }
     else if (!state_.tracing_enabled) {
