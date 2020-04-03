@@ -154,6 +154,19 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         getVehicleSimApi(vehicle_name)->setTraceLine(color_rgba, thickness);
     });
 
+    pimpl_->server.bind("simSetBoundary", [&](const RpcLibAdapatorsBase::Boundary &boundary, const std::string& vehicle_name) -> void {
+        getVehicleSimApi(vehicle_name)->setBoundary(boundary.to());
+    });
+
+    pimpl_->server.bind("simGetBoundary", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::Boundary {
+        const auto& boundary = getVehicleSimApi(vehicle_name)->getBoundary();
+        return RpcLibAdapatorsBase::Boundary(boundary);
+    });
+
+    pimpl_->server.bind("simEnableCustomBoundaryData", [&](bool is_enable, const std::string& vehicle_name) -> void {
+        getVehicleSimApi(vehicle_name)->enableCustomBoundaryData(is_enable);
+    });
+
     pimpl_->server.
         bind("simGetLidarSegmentation", [&](const std::string& lidar_name, const std::string& vehicle_name) -> std::vector<int> {
         return getVehicleApi(vehicle_name)->getLidarSegmentation(lidar_name);

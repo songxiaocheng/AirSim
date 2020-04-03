@@ -27,6 +27,7 @@ public: //types
     typedef msr::airlib::GeoPoint GeoPoint;
     typedef msr::airlib::Vector3r Vector3r;
     typedef msr::airlib::Pose Pose;
+    typedef msr::airlib::Boundary Boundary;
     typedef msr::airlib::Quaternionr Quaternionr;
     typedef msr::airlib::CollisionInfo CollisionInfo;
     typedef msr::airlib::VectorMath VectorMath;
@@ -76,6 +77,10 @@ public: //implementation of VehicleSimApiBase
     virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
     virtual Pose getPose() const override;
     virtual void setPose(const Pose& pose, bool ignore_collision) override;
+    virtual Boundary getBoundary() const override;
+    virtual void setBoundary(const Boundary& boudnary) override;
+    virtual void enableCustomBoundaryData(bool is_enable) override;
+
     virtual msr::airlib::CameraInfo getCameraInfo(const std::string& camera_name) const override;
     virtual void setCameraOrientation(const std::string& camera_name, const Quaternionr& orientation) override;
     virtual void setCameraFoV(const std::string& camera_name, float fov_degrees) override;
@@ -88,6 +93,7 @@ public: //implementation of VehicleSimApiBase
     }
     virtual void toggleTrace() override;
     virtual void setTraceLine(const std::vector<float>& color_rgba, float thickness) override;
+    virtual void toggleBoundary() override;
 
     virtual void updateRenderedState(float dt) override;
     virtual void updateRendering(float dt) override;
@@ -102,6 +108,7 @@ protected: //additional interface for derived class
     virtual msr::airlib::VehicleApiBase* getVehicleApiBase() const;
     msr::airlib::Kinematics* getKinematics();
     msr::airlib::Environment* getEnvironment();
+    void showBoundary(float dt);
 
 public: //Unreal specific methods
     PawnSimApi(const Params& params);
@@ -193,4 +200,8 @@ private: //vars
 
     FColor trace_color_ = FColor::Purple;
     float trace_thickness_ = 3.0f;
+
+    bool beam_enabled_ = false;
+    Boundary boundary_;
+    bool is_passive_ = false;
 };

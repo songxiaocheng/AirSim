@@ -505,3 +505,7 @@ class MeshPositionVertexBuffersResponse(MsgpackMixin):
     vertices = 0.0
     indices = 0.0
     name = ''
+
+class Boundary(MsgpackMixin):
+    pos = Vector3r()
+    boundary = 0.0

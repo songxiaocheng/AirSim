@@ -50,6 +50,11 @@ public:
 
     virtual Pose getPose() const = 0;
     virtual void setPose(const Pose& pose, bool ignore_collision) = 0;
+
+    virtual Boundary getBoundary() const = 0;
+    virtual void setBoundary(const Boundary& boundary) = 0;
+    virtual void enableCustomBoundaryData(bool is_enable) = 0;
+
     virtual const Kinematics::State* getGroundTruthKinematics() const = 0;
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const = 0;
 
@@ -64,6 +69,7 @@ public:
     virtual std::string getRecordFileLine(bool is_header_line) const = 0;
     virtual void toggleTrace() = 0;
     virtual void setTraceLine(const std::vector<float>& color_rgba, float thickness) = 0;
+    virtual void toggleBoundary() = 0;
 
     //use pointer here because of derived classes for VehicleSetting
     const AirSimSettings::VehicleSetting* getVehicleSetting() const
