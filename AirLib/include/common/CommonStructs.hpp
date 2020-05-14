@@ -313,5 +313,15 @@ struct MeshPositionVertexBuffersResponse {
     std::string name;
 };
 
+struct Obstacles2D {
+    Vector3r center;
+    vector<Vector3r> points;
+
+    Obstacles2D() {}
+
+    Obstacles2D(const Vector3r& center, const vector<Vector3r>& points) :center(center), points(points)
+    {}
+};
+
 }} //namespace
 #endif

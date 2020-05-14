@@ -105,6 +105,8 @@ public:
     msr::airlib::Environment::State simGetGroundTruthEnvironment(const std::string& vehicle_name = "") const;
 
 	std::vector<std::string> simSwapTextures(const std::string& tags, int tex_id = 0, int component_id = 0, int material_id = 0);
+    
+    msr::airlib::Obstacles2D simGetObstacles2D(uint8_t num, float min_dist, float max_dist, float snr, const std::string& vehicle_name = "") const;
 
 protected:
     void* getClient();

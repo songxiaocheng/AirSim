@@ -313,6 +313,11 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
 		return *getWorldSimApi()->swapTextures(tag, tex_id, component_id, material_id);
 	});
 
+    pimpl_->server.bind("simGetObstacles2D", [&](uint8_t num, float min_dist, float max_dist, float snr, const std::string& vehicle_name) -> RpcLibAdapatorsBase::Obstacles2D {
+        const auto& obstacles = getVehicleSimApi(vehicle_name)->getObstacles2D(num, min_dist, max_dist, snr);
+        return RpcLibAdapatorsBase::Obstacles2D(obstacles);
+    });
+
     //if we don't suppress then server will bomb out for exceptions raised by any method
     pimpl_->server.suppress_exceptions(true);
 }

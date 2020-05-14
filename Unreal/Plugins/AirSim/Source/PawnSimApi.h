@@ -34,6 +34,7 @@ public: //types
     typedef msr::airlib::Utils Utils;
     typedef msr::airlib::AirSimSettings::VehicleSetting VehicleSetting;
     typedef msr::airlib::ImageCaptureBase ImageCaptureBase;
+    typedef msr::airlib::Obstacles2D Obstacles2D;
 
     struct Params {
         APawn* pawn; 
@@ -95,6 +96,7 @@ public: //implementation of VehicleSimApiBase
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const override;
     virtual std::string getRecordFileLine(bool is_header_line) const override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
+    virtual Obstacles2D getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) const override;
 
 protected: //additional interface for derived class
     virtual void pawnTick(float dt);

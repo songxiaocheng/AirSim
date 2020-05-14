@@ -9,6 +9,7 @@
 #include "PIPCamera.h"
 #include "NedTransform.h"
 #include "common/EarthUtils.hpp"
+#include "Components/LineBatchComponent.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -315,6 +316,49 @@ void PawnSimApi::reportState(msr::airlib::StateReporter& reporter)
     // report actual location in unreal coordinates so we can plug that into the UE editor to move the drone.
     FVector unrealPosition = getUUPosition();
     reporter.writeValue("unreal pos", Vector3r(unrealPosition.X, unrealPosition.Y, unrealPosition.Z));
+}
+
+msr::airlib::Obstacles2D PawnSimApi::getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) const
+{
+    std::default_random_engine generator;
+    std::normal_distribution<double> distribution(0.0, snr);
+    bool add_noise = snr >= std::numeric_limits<float>::epsilon();
+
+    auto* world = params_.pawn->GetWorld();
+    if (world == nullptr) return Obstacles2D();
+    world->LineBatcher->Flush();
+
+    const FVector Center = params_.pawn->GetActorLocation() - 50 * FVector::UpVector;
+    const float MinUnit = ned_transform_.fromNed(min_dist);
+    const float MaxUnit = ned_transform_.fromNed(max_dist);
+    const float inf = std::numeric_limits<float>::infinity();
+    const FVector Infty = FVector(inf, inf, inf);
+
+    msr::airlib::vector<msr::airlib::Vector3r> points;
+    for (int i = 0; i < num; i++) {
+        const double theta = 2.0 * i * M_PI / num;
+        const FVector ForwardVector(cos(theta), sin(theta), 0);
+        const FVector Start = ((ForwardVector * MinUnit) + Center);
+        const FVector End = ((ForwardVector * MaxUnit)+ Center);
+        FVector Point = Infty;
+        FHitResult OutHit;
+        const FCollisionQueryParams CollisionParams;
+        if (world->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams)) {
+            Point = OutHit.ImpactPoint;
+            if (add_noise) {
+                const auto TotalDist = OutHit.Distance + MinUnit;
+                const float Noise = TotalDist * distribution(generator);
+                const auto NoisedDist = TotalDist + Noise;
+                Point = NoisedDist > MaxUnit ? Infty : Start + ForwardVector * NoisedDist;
+            }
+        }
+        const FVector DrawEndPoints = Point == Infty ? End : Point;
+        UKismetSystemLibrary::DrawDebugLine(static_cast<UObject*>(world), Start, DrawEndPoints, FColor::Green, 5, 5);
+        points.emplace_back(ned_transform_.toLocalNed(Point));
+    }
+    const msr::airlib::Vector3r center = ned_transform_.toLocalNed(Center);
+
+    return Obstacles2D(center, points);
 }
 
 //void playBack()
