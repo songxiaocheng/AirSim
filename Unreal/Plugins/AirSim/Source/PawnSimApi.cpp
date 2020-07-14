@@ -318,23 +318,30 @@ void PawnSimApi::reportState(msr::airlib::StateReporter& reporter)
     reporter.writeValue("unreal pos", Vector3r(unrealPosition.X, unrealPosition.Y, unrealPosition.Z));
 }
 
-msr::airlib::Obstacles2D PawnSimApi::getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) const
+msr::airlib::Obstacles2D PawnSimApi::getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr)
 {
     std::default_random_engine generator;
     std::normal_distribution<double> distribution(0.0, snr);
     bool add_noise = snr >= std::numeric_limits<float>::epsilon();
 
-    auto* world = params_.pawn->GetWorld();
-    if (world == nullptr) return Obstacles2D();
-    world->LineBatcher->Flush();
-
-    const FVector Center = params_.pawn->GetActorLocation() - 50 * FVector::UpVector;
+    UWorld* world = nullptr;
+    UAirBlueprintLib::RunCommandOnGameThread([this, &world]() {
+        world = params_.pawn->GetWorld();
+    }, true);
+	
+    //auto* world = params_.pawn->GetWorld();
+    if (world == nullptr) {
+        UE_LOG(LogTemp, Warning, TEXT("world is null!"));
+        return Obstacles2D();
+    }
+    const FVector Center = params_.pawn->GetActorLocation();
     const float MinUnit = ned_transform_.fromNed(min_dist);
     const float MaxUnit = ned_transform_.fromNed(max_dist);
     const float inf = std::numeric_limits<float>::infinity();
     const FVector Infty = FVector(inf, inf, inf);
 
     msr::airlib::vector<msr::airlib::Vector3r> points;
+    detectionPoints_.clear();
     for (int i = 0; i < num; i++) {
         const double theta = 2.0 * i * M_PI / num;
         const FVector ForwardVector(cos(theta), sin(theta), 0);
@@ -353,14 +360,20 @@ msr::airlib::Obstacles2D PawnSimApi::getObstacles2D(uint8_t num, float min_dist,
             }
         }
         const FVector DrawEndPoints = Point == Infty ? End : Point;
-        UKismetSystemLibrary::DrawDebugLine(static_cast<UObject*>(world), Start, DrawEndPoints, FColor::Green, 5, 5);
+        detectionPoints_.emplace_back(std::make_pair<FVector, FVector>(FVector(Start), FVector(DrawEndPoints)));
         points.emplace_back(ned_transform_.toLocalNed(Point));
     }
     const msr::airlib::Vector3r center = ned_transform_.toLocalNed(Center);
-
-    return Obstacles2D(center, points);
+    const auto ret = Obstacles2D{ center, points };
+    return ret;
 }
 
+void PawnSimApi::drawDetectionPoints(float dt) const
+{
+    for (const auto& pair : detectionPoints_) {
+        DrawDebugLine(params_.pawn->GetWorld(), pair.first, pair.second, FColor::Green, false, 2*dt, 0, 5);
+    }
+}
 //void playBack()
 //{
     //if (params_.pawn->GetRootPrimitiveComponent()->IsAnySimulatingPhysics()) {

@@ -314,7 +314,9 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
 	});
 
     pimpl_->server.bind("simGetObstacles2D", [&](uint8_t num, float min_dist, float max_dist, float snr, const std::string& vehicle_name) -> RpcLibAdapatorsBase::Obstacles2D {
-        const auto& obstacles = getVehicleSimApi(vehicle_name)->getObstacles2D(num, min_dist, max_dist, snr);
+        const auto obstacles = getVehicleSimApi(vehicle_name)->getObstacles2D(num, min_dist, max_dist, snr);
+        getWorldSimApi()->printLogMessage("simGetObstacles2D: ", std::to_string(obstacles.points.size()));
+        assert(obstacles.points.size() == num);
         return RpcLibAdapatorsBase::Obstacles2D(obstacles);
     });
 

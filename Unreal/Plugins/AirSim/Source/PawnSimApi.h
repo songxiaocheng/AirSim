@@ -96,8 +96,7 @@ public: //implementation of VehicleSimApiBase
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const override;
     virtual std::string getRecordFileLine(bool is_header_line) const override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
-    virtual Obstacles2D getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) const override;
-
+    virtual Obstacles2D getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) override;
 protected: //additional interface for derived class
     virtual void pawnTick(float dt);
     void setPoseInternal(const Pose& pose, bool ignore_collision);
@@ -130,6 +129,7 @@ public: //Unreal specific methods
 
     void possess();
     void setRCForceFeedback(float rumble_strength, float auto_center);
+    void drawDetectionPoints(float dt) const;
 
 private: //methods
     bool canTeleportWhileMove()  const;
@@ -195,4 +195,6 @@ private: //vars
 
     FColor trace_color_ = FColor::Purple;
     float trace_thickness_ = 3.0f;
+
+    std::vector<std::pair<FVector, FVector> > detectionPoints_;
 };

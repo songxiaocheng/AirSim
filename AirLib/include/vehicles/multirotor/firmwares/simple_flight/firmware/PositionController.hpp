@@ -69,7 +69,6 @@ public:
         //use this to drive child controller
         velocity_goal_[axis_] = pid_->getOutput() * params_->velocity_pid.max_limit[axis_];
         velocity_controller_->update();
-
         //final output
         output_ = velocity_controller_->getOutput();
     }
