@@ -368,10 +368,17 @@ msr::airlib::Obstacles2D PawnSimApi::getObstacles2D(uint8_t num, float min_dist,
     return ret;
 }
 
+void PawnSimApi::toggleDetectionPoints()
+{
+    show_detection_points_ = !show_detection_points_;
+}
+
 void PawnSimApi::drawDetectionPoints(float dt) const
 {
-    for (const auto& pair : detectionPoints_) {
-        DrawDebugLine(params_.pawn->GetWorld(), pair.first, pair.second, FColor::Green, false, 2*dt, 0, 5);
+    if (show_detection_points_) {
+        for (const auto& pair : detectionPoints_) {
+            DrawDebugLine(params_.pawn->GetWorld(), pair.first, pair.second, FColor::Green, false, 2 * dt, 0, 5);
+        }
     }
 }
 //void playBack()

@@ -64,6 +64,8 @@ public:
     virtual std::string getRecordFileLine(bool is_header_line) const = 0;
     virtual void toggleTrace() = 0;
     virtual void setTraceLine(const std::vector<float>& color_rgba, float thickness) = 0;
+
+    virtual void toggleDetectionPoints() = 0;
     virtual Obstacles2D getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) = 0;
 
     //use pointer here because of derived classes for VehicleSetting

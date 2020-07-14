@@ -90,6 +90,11 @@ void ASimHUD::inputEventToggleTrace()
     simmode_->getVehicleSimApi()->toggleTrace();
 }
 
+void ASimHUD::inputEventToggleDetectionPoints()
+{
+    simmode_->getVehicleSimApi()->toggleDetectionPoints();
+}
+
 ASimHUD::ImageType ASimHUD::getSubwindowCameraType(int window_index)
 {
     //TODO: index check

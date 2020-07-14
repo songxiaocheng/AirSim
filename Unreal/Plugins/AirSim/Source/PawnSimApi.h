@@ -129,6 +129,8 @@ public: //Unreal specific methods
 
     void possess();
     void setRCForceFeedback(float rumble_strength, float auto_center);
+
+    virtual void toggleDetectionPoints() override;
     void drawDetectionPoints(float dt) const;
 
 private: //methods
@@ -197,4 +199,5 @@ private: //vars
     float trace_thickness_ = 3.0f;
 
     std::vector<std::pair<FVector, FVector> > detectionPoints_;
+    bool show_detection_points_;
 };
