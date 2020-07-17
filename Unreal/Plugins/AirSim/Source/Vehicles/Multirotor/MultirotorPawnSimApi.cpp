@@ -123,6 +123,8 @@ void MultirotorPawnSimApi::updateRendering(float dt)
     }
 
     pawn_events_->getActuatorSignal().emit(rotor_actuator_info_);
+
+    drawDetectionPoints(dt);
 }
 
 void MultirotorPawnSimApi::setPose(const Pose& pose, bool ignore_collision)

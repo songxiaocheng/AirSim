@@ -755,6 +755,29 @@ public:
         }
     };
 
+    struct Obstacles2D
+    {
+        Vector3r center;
+        std::vector<Vector3r> points;
+
+        MSGPACK_DEFINE_MAP(center, points);
+
+        Obstacles2D() {}
+
+        Obstacles2D(const msr::airlib::Obstacles2D& b)
+        {
+            center = b.center;
+            RpcLibAdapatorsBase::from(b.points, points);
+        }
+
+        msr::airlib::Obstacles2D to() const
+        {
+            msr::airlib::Obstacles2D b;
+            b.center = center.to();
+            RpcLibAdapatorsBase::to(points, b.points);
+            return b;
+        }
+    };
 
 };
 
