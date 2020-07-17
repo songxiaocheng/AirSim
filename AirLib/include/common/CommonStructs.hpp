@@ -313,5 +313,10 @@ struct MeshPositionVertexBuffersResponse {
     std::string name;
 };
 
+struct Obstacles2D {
+    Vector3r center;
+    vector<Vector3r> points;
+};
+
 }} //namespace
 #endif
