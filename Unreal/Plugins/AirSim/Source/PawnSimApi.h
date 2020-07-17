@@ -97,6 +97,8 @@ public: //implementation of VehicleSimApiBase
     virtual std::string getRecordFileLine(bool is_header_line) const override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
     virtual Obstacles2D getObstacles2D(uint8_t num, float min_dist, float max_dist, float snr) override;
+    virtual void applyDisturbance(bool left) override;
+
 protected: //additional interface for derived class
     virtual void pawnTick(float dt);
     void setPoseInternal(const Pose& pose, bool ignore_collision);
@@ -200,4 +202,6 @@ private: //vars
 
     std::vector<std::pair<FVector, FVector> > detectionPoints_;
     bool show_detection_points_;
+    bool disturbance_ = false;
+
 };
