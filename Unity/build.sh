@@ -4,7 +4,8 @@ set -x
 # set -e
 
 # check for rpclib
-if [ ! -f ../external/rpclib/rpclib-2.2.1/rpclib.pc.in ]; then
+RPC_VERSION=c4fb37acbe67ec99e47e5187acd2a7450bde0cec
+if [ ! -f ../external/rpclib/rpclib-{RPC_VERSION}/rpclib.pc.in ]; then
     >&2 echo "error, rpc.pc.in not found, please run setup.sh first and then run build.sh again"
 fi
 
